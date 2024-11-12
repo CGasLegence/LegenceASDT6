@@ -3,7 +3,7 @@
 	<Version>1.0</Version>
 	<ProviderName>Legence</ProviderName>
 	<DefaultLocale>en-us</DefaultLocale>
-	<DisplayName DefaultValue="Office Add-ins signature sample"/>
+	<DisplayName DefaultValue="Legence Auto Signature"/>
 	<Description DefaultValue="Insert your signature with ease."/>
 	<IconUrl DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/assets/final_logo.png"/>
 	<HighResolutionIconUrl DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/assets/final_logo.png"/>
