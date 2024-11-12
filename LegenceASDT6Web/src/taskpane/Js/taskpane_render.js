@@ -25,10 +25,7 @@ function on_initialization_complete()
       _email_id = $("input#email_id");
       _job_title = $("input#job_title");
       _phone_number = $("input#phone_number");
-      _greeting_text = $("input#greeting_text");
-      _preferred_pronoun = $("input#preferred_pronoun");
       _message = $("p#message");
-
       prepopulate_from_userprofile();
       load_saved_user_info();
 		}
@@ -127,9 +124,6 @@ function create_user_info()
     user_info.email = email;
     user_info.job = _job_title.val().trim();
     user_info.phone = _phone_number.val().trim();
-
-
-
     console.log(user_info);
     localStorage.setItem('user_info', JSON.stringify(user_info));
     navigate_to_taskpane_assignsignature();
