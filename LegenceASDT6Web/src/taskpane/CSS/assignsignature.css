@@ -66,19 +66,19 @@
     opacity: 1;
   }
 
-  .testBtn{
+.testBtn {
     position: relative;
     top: -1px;
     left: 17px;
     border: none;
-    color: #FFFFFF; /* White */
-    background-color: #00602B; /* Dark green */
+    color: #323130; 
+    background-color: #51ff00;
     text-decoration: none;
     text-align: center;
     font-size: 14px;
     padding: 10px 15px;
     cursor: pointer;
-  }
+}
 
   #edit_button{
     position: relative;
