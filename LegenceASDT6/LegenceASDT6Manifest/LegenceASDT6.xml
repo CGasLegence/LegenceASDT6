@@ -1,12 +1,12 @@
 ﻿<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="MailApp">
-	<Id>{C341AD31-BF7A-4C1D-99F1-D2E5896BEB0A}</Id>
+	<Id>{C341AD31-BF7A-4C1D-99F1-D2E5896BFF0A}</Id>
 	<Version>1.0</Version>
-	<ProviderName>Contoso</ProviderName>
+	<ProviderName>Legence</ProviderName>
 	<DefaultLocale>en-us</DefaultLocale>
 	<DisplayName DefaultValue="Office Add-ins signature sample"/>
 	<Description DefaultValue="Insert your signature with ease."/>
-	<IconUrl DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/assets/final_logo.png"/>
-	<HighResolutionIconUrl DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/assets/final_logo.jpg"/>
+	<IconUrl DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/assets/final_logo.png"/>
+	<HighResolutionIconUrl DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/assets/final_logo.png"/>
 	<SupportUrl DefaultValue="https://helpdesk.wearelegence.com"/>
 	<AppDomains>
 		<AppDomain>https://wearelegence.com</AppDomain>
@@ -23,7 +23,7 @@
 	<FormSettings>
 		<Form xsi:type="ItemRead">
 			<DesktopSettings>
-				<SourceLocation DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/src/taskpane/HTML/editsignature.html"/>
+				<SourceLocation DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/src/taskpane/HTML/editsignature.html"/>
 				<RequestedHeight>250</RequestedHeight>
 			</DesktopSettings>
 		</Form>
@@ -109,12 +109,12 @@
 			</Hosts>
 			<Resources>
 				<bt:Images>
-					<bt:Image id="Icon16x16" DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/assets/final_logo.png"/>
+					<bt:Image id="Icon16x16" DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/assets/final_logo.png"/>
 				</bt:Images>
 				<bt:Urls>
-					<bt:Url id="residUrl0" DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/src/taskpane/HTML/editsignature.html"/>
-					<bt:Url id="Autorun" DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/src/runtime/HTML/autorunweb.html"/>
-					<bt:Url id="runtimeJs" DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/src/runtime/Js/autorunshared.js"/>
+					<bt:Url id="residUrl0" DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/src/taskpane/HTML/editsignature.html"/>
+					<bt:Url id="Autorun" DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/src/runtime/HTML/autorunweb.html"/>
+					<bt:Url id="runtimeJs" DefaultValue="https://cgaslegence.github.io/LegenceASDT6/LegenceASDT6Web/src/runtime/Js/autorunshared.js"/>
 				</bt:Urls>
 				<bt:ShortStrings>
 					<bt:String id="residGL0" DefaultValue="Signature Injector"/>

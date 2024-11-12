@@ -69,10 +69,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\final_logo.png" />
-    <Content Include="assets\Legence Icon - 16x16.png" />
-    <Content Include="assets\Legence Icon - 32x32.png" />
-    <Content Include="assets\Legence Icon - 64x64.png" />
-    <Content Include="assets\Legence Icon - 80x80.png" />
+    <Content Include="assets\16x16.png" />
+    <Content Include="assets\32x32.png" />
+    <Content Include="assets\64x64.png" />
+    <Content Include="assets\80x80.png" />
     <Content Include="Content\Button.css" />
     <Content Include="Content\fabric-9.6.0.scoped.css" />
     <Content Include="Content\fabric-9.6.0.scoped.min.css" />
