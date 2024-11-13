@@ -10,32 +10,47 @@
  * @param {*} eventObj Office event object
  * @returns
  */
-async function loadSignatureFromFile() {
+function loadSignatureFromFile() {
     const filePath = '../../Templates/Legence.htm';
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', filePath, false); // Synchronous request
     try {
-        const response = await fetch(filePath);
-        if (!response.ok) {
-            throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
+        xhr.send();
+        if (xhr.status === 200) {
+            return xhr.responseText;
+        } else {
+            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
+            return null;
         }
-        const htmlContent = await response.text();
-        return htmlContent; // Return the loaded HTML content as a string
     } catch (error) {
         console.error('Error fetching HTML file:', error);
         return null;
     }
 }
+
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
-    const signature = await loadSignatureFromFile();
-    Office.context.mailbox.item.body.setSignatureAsync(
-        signature,
-        { coercionType: "html" },
-        function (asyncResult) {
-            console.log(`setSignatureAsync: ${asyncResult.status}`);
-        }
-    );
-  
+
+    // Load the signature synchronously
+    const signature = loadSignatureFromFile();
+
+    if (signature) {
+        // Set the loaded signature in the email
+        Office.context.mailbox.item.body.setSignatureAsync(
+            signature,
+            { coercionType: "html" },
+            function (asyncResult) {
+                console.log(`setSignatureAsync: ${asyncResult.status}`);
+                if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
+                    console.error('Failed to set signature:', asyncResult.error.message);
+                }
+            }
+        );
+    } else {
+        console.error('No signature loaded.');
+    }
 }
+
 
 /**
  * For Outlook on Windows and on Mac only. Insert signature into appointment or message.
