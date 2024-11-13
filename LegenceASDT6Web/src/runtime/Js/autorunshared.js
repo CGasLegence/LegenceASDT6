@@ -11,37 +11,16 @@
  * @returns
  */
 function checkSignature(eventObj) {
-  let user_info_str = Office.context.roamingSettings.get("user_info");
-  if (!user_info_str) {
-    display_insight_infobar();
-  } else {
-    let user_info = JSON.parse(user_info_str);
-
-    if (Office.context.mailbox.item.getComposeTypeAsync) {
-      //Find out if the compose type is "newEmail", "reply", or "forward" so that we can apply the correct template.
-      Office.context.mailbox.item.getComposeTypeAsync(
-        {
-          asyncContext: {
-            user_info: user_info,
-            eventObj: eventObj,
-          },
-        },
+    let user_info_str = Office.context.roamingSettings.get("user_info");
+    const signature = "<br><br>--<brLegenceSig<br>Company Name";
+    Office.context.mailbox.item.body.setSignatureAsync(
+        signature,
+        { coercionType: "html" },
         function (asyncResult) {
-          if (asyncResult.status === "succeeded") {
-            insert_auto_signature(
-              asyncResult.value.composeType,
-              asyncResult.asyncContext.user_info,
-              asyncResult.asyncContext.eventObj
-            );
-          }
+            console.log(`setSignatureAsync: ${asyncResult.status}`);
         }
-      );
-    } else {
-      // Appointment item. Just use newMail pattern
-      let user_info = JSON.parse(user_info_str);
-      insert_auto_signature("newMail", user_info, eventObj);
-    }
-  }
+    );
+  
 }
 
 /**
