@@ -10,9 +10,23 @@
  * @param {*} eventObj Office event object
  * @returns
  */
+async function loadSignatureFromFile() {
+    const filePath = '../../Templates/Legence.htm';
+    try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
+        }
+        const htmlContent = await response.text();
+        return htmlContent; // Return the loaded HTML content as a string
+    } catch (error) {
+        console.error('Error fetching HTML file:', error);
+        return null;
+    }
+}
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
-    const signature = "<br><br>--<brLegenceSig<br>Company Name";
+    const signature = await loadSignatureFromFile();
     Office.context.mailbox.item.body.setSignatureAsync(
         signature,
         { coercionType: "html" },
