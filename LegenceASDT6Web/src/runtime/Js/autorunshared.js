@@ -36,14 +36,13 @@ function checkSignature(eventObj) {
     // Load the signature synchronously
     const signature = loadSignatureFromFile();
 
-    // Convert the .dotx template to HTML and use it as a signature
     convertTemplateToHtml(function (htmlContent) {
         console.log("HTML content:", htmlContent);
 
         if (signature) {
             // Set the loaded signature in the email
             Office.context.mailbox.item.body.setSignatureAsync(
-                htmlContentInMemory,
+                htmlContent, // Use htmlContent passed by the callback
                 { coercionType: "html" },
                 function (asyncResult) {
                     console.log(`setSignatureAsync: ${asyncResult.status}`);
@@ -55,19 +54,27 @@ function checkSignature(eventObj) {
         } else {
             console.error('No signature loaded.');
         }
-    }); // Closing bracket for convertTemplateToHtml callback function
+    });
 }
 // Function to convert .dotx content to HTML with Base64 images
-function convertTemplateToHtml(callback) {
+
+// Variable to store HTML content in memory
+
+
+// Function to load the .dotx file and convert it to HTML
+function loadAndConvertTemplate() {
     const filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
 
+    // Fetch the .dotx file
     fetch(filePath)
         .then(response => {
-            if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch file: ${response.statusText}`);
+            }
             return response.arrayBuffer();
         })
         .then(arrayBuffer => {
-            // Convert the .dotx content to HTML using mammoth.js
+            // Convert to HTML using mammoth.js
             return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
                 convertImage: mammoth.images.imgElement(image => {
                     return image.readAsBase64().then(base64 => {
@@ -79,19 +86,20 @@ function convertTemplateToHtml(callback) {
             });
         })
         .then(result => {
-            // Store the converted HTML content in memory
+            // Store the HTML content in memory
             htmlContentInMemory = result.value;
-            console.log("HTML content loaded into memory:", htmlContentInMemory);
+            console.log("Converted HTML stored in memory:", htmlContentInMemory);
 
-            // Call the callback function if provided
-            if (callback) callback(htmlContentInMemory);
+            // Display the result in the browser
+            document.getElementById("output").textContent = htmlContentInMemory;
         })
         .catch(error => {
             console.error("Error converting .dotx file:", error);
         });
 }
-
-
+    </script >
+</body >
+</html >
 
 //END OF THAT
 
