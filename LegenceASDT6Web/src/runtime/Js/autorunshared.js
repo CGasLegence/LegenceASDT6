@@ -27,17 +27,20 @@ function loadSignatureFromFile() {
         return null;
     }
 }
-
+//This inserts the signature from the "Get"
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
 
     // Load the signature synchronously
     const signature = loadSignatureFromFile();
+    convertTemplateToHtml(function (htmlContent) {
+        console.log("HTML content:", htmlContent);
+       // useHtmlContent(htmlContent);
 
     if (signature) {
         // Set the loaded signature in the email
         Office.context.mailbox.item.body.setSignatureAsync(
-            signature,
+            htmlContent,
             { coercionType: "html" },
             function (asyncResult) {
                 console.log(`setSignatureAsync: ${asyncResult.status}`);
@@ -50,7 +53,100 @@ function checkSignature(eventObj) {
         console.error('No signature loaded.');
     }
 }
+//This portion converts the dotx over to HTML to be used.
+function convertTemplateToHtml(callback) {
+    var filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
 
+    fetch(filePath)
+        .then(function (response) {
+            if (!response.ok) throw new Error('Failed to fetch file: ' + response.statusText);
+            return response.arrayBuffer();
+        })
+        .then(function (arrayBuffer) {
+            return convertDotxToHtmlWithImages(arrayBuffer);
+        })
+        .then(function (htmlContent) {
+            callback(htmlContent);
+        })
+        .catch(function (error) {
+            console.error("Error fetching or converting .dotx file:", error);
+        });
+}
+
+// Function to convert .dotx content to HTML with Base64 images
+function convertDotxToHtmlWithImages(arrayBuffer) {
+    var zip = new JSZip();
+    return zip.loadAsync(arrayBuffer).then(function () {
+        // Extract the main document content
+        return zip.file('word/document.xml').async("string");
+    }).then(function (documentXml) {
+        // Extract images from the .dotx file
+        return extractImagesFromZip(zip).then(function (images) {
+            // Convert the document XML to HTML with embedded Base64 images
+            return convertDocumentXmlToHtml(documentXml, images);
+        });
+    });
+}
+
+// Function to extract images and convert them to Base64
+function extractImagesFromZip(zip) {
+    var images = {};
+    var mediaFiles = zip.folder("word/media");
+    var imagePromises = [];
+
+    if (mediaFiles) {
+        mediaFiles.forEach(function (relativePath, file) {
+            var promise = file.async("base64").then(function (base64) {
+                images[relativePath] = "data:image/" + getImageExtension(relativePath) + ";base64," + base64;
+            });
+            imagePromises.push(promise);
+        });
+    }
+
+    return Promise.all(imagePromises).then(function () {
+        return images;
+    });
+}
+
+function getImageExtension(filename) {
+    var ext = filename.split('.').pop().toLowerCase();
+    return ext === 'jpeg' || ext === 'jpg' ? 'jpeg' : ext;
+}
+
+// Function to convert the document XML to HTML and embed Base64 images
+function convertDocumentXmlToHtml(xml, images) {
+    var parser = new DOMParser();
+    var xmlDoc = parser.parseFromString(xml, "application/xml");
+
+    var html = "";
+    var paragraphs = xmlDoc.getElementsByTagName("w:p");
+    for (var i = 0; i < paragraphs.length; i++) {
+        var paragraphHtml = "<p>";
+        var texts = paragraphs[i].getElementsByTagName("w:t");
+        for (var j = 0; j < texts.length; j++) {
+            paragraphHtml += texts[j].textContent;
+        }
+        paragraphHtml += "</p>";
+        html += paragraphHtml;
+    }
+
+    // Embed images in the HTML
+    var imageRefs = xmlDoc.getElementsByTagName("w:drawing");
+    for (var k = 0; k < imageRefs.length; k++) {
+        var blip = imageRefs[k].getElementsByTagName("a:blip")[0];
+        if (blip) {
+            var embed = blip.getAttribute("r:embed");
+            var imageName = "word/media/" + embed;
+            if (images[imageName]) {
+                html += '<img src="' + images[imageName] + '" />';
+            }
+        }
+    }
+
+    return html;
+}
+
+//END OF THAT
 
 /**
  * For Outlook on Windows and on Mac only. Insert signature into appointment or message.
