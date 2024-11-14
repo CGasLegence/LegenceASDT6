@@ -27,20 +27,21 @@ function loadSignatureFromFile() {
         return null;
     }
 }
+// Variable to store HTML content in memory
 let htmlContentInMemory = "";
 
-//This inserts the signature from the "Get"
+// Function to check and set the signature
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
 
     // Load the signature synchronously
     const signature = loadSignatureFromFile();
 
-    convertTemplateToHtml(function (htmlContent) {
+    // Convert the template to HTML and use it for the signature
+    loadAndConvertTemplate(function (htmlContent) {
         console.log("HTML content:", htmlContent);
 
         if (signature) {
-            // Set the loaded signature in the email
             Office.context.mailbox.item.body.setSignatureAsync(
                 htmlContent, // Use htmlContent passed by the callback
                 { coercionType: "html" },
@@ -56,13 +57,9 @@ function checkSignature(eventObj) {
         }
     });
 }
-// Function to convert .dotx content to HTML with Base64 images
-
-// Variable to store HTML content in memory
-
 
 // Function to load the .dotx file and convert it to HTML
-function loadAndConvertTemplate() {
+function loadAndConvertTemplate(callback) {
     const filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
 
     // Fetch the .dotx file
@@ -86,17 +83,18 @@ function loadAndConvertTemplate() {
             });
         })
         .then(result => {
-            // Store the HTML content in memory
+            // Store the converted HTML in memory
             htmlContentInMemory = result.value;
             console.log("Converted HTML stored in memory:", htmlContentInMemory);
 
-            // Display the result in the browser
-            document.getElementById("output").textContent = htmlContentInMemory;
+            // Call the callback function if provided
+            if (callback) callback(htmlContentInMemory);
         })
         .catch(error => {
             console.error("Error converting .dotx file:", error);
         });
 }
+
 
 
 //END OF THAT
