@@ -97,9 +97,7 @@ function loadAndConvertTemplate() {
             console.error("Error converting .dotx file:", error);
         });
 }
-    </script >
-</body >
-</html >
+
 
 //END OF THAT
 
