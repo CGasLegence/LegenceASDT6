@@ -56,6 +56,24 @@ function checkSignature(eventObj) {
     }); // Closing bracket for convertTemplateToHtml callback function
 }
 // Function to convert .dotx content to HTML with Base64 images
+function convertTemplateToHtml(callback) {
+    var filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
+
+    fetch(filePath)
+        .then(function (response) {
+            if (!response.ok) throw new Error('Failed to fetch file: ' + response.statusText);
+            return response.arrayBuffer();
+        })
+        .then(function (arrayBuffer) {
+            return convertDotxToHtmlWithImages(arrayBuffer); // Updated function call
+        })
+        .then(function (htmlContent) {
+            callback(htmlContent);
+        })
+        .catch(function (error) {
+            console.error("Error fetching or converting .dotx file:", error);
+        });
+}
 function convertDotxToHtmlWithImages(arrayBuffer) {
     var zip = new JSZip();
     return zip.loadAsync(arrayBuffer).then(function () {
