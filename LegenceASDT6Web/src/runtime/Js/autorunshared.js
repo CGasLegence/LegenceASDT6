@@ -82,47 +82,7 @@ function checkSignature(eventObj) {
     });
 }
 
-// Function to load the .dotx file and convert it to HTML
-function loadAndConvertTemplate(callback) {
-    const filePath = '../../Templates/CMTA.docx'; // Adjust the path as needed
 
-    // Fetch the .dotx file
-    fetch(filePath)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Failed to fetch file: ${response.statusText}`);
-            }
-            return response.arrayBuffer();
-        })
-        .then(arrayBuffer => {
-            // Convert to HTML using mammoth.js
-            return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
-                convertImage: mammoth.images.imgElement(image => {
-                    console.log("Found image:", image.contentType);
-                    return image.readAsBase64().then(base64 => {
-                        return {
-                            src: "data:" + image.contentType + ";base64," + base64
-                        };
-                    });
-                })
-            });
-        })
-        .then(result => {
-            // Store the converted HTML in memory
-            htmlContentInMemory = result.value;
-            console.log("Converted HTML stored in memory:", htmlContentInMemory);
-
-            // Call the callback function if provided
-            if (callback) callback(htmlContentInMemory);
-        })
-        .catch(error => {
-            console.error("Error converting .dotx file:", error);
-        });
-}
-
-
-
-//END OF THAT
 
 /**
  * For Outlook on Windows and on Mac only. Insert signature into appointment or message.
