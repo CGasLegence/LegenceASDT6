@@ -80,30 +80,37 @@ function convertTemplateToHtml(callback) {
 function convertDotxToHtmlWithImages(arrayBuffer) {
     var zip = new JSZip();
     return zip.loadAsync(arrayBuffer).then(function () {
-        // Extract the main document content
-        return zip.file('word/document.xml').async("string");
-    }).then(function (documentXml) {
-        // Extract images from the .dotx file
-        return extractImagesFromZip(zip).then(function (images) {
-            // Convert the document XML to HTML with embedded Base64 images
-            return convertDocumentXmlToHtml(documentXml, images);
+        return zip.file('word/document.xml').async("string").then(function (documentXml) {
+            return zip.file('word/_rels/document.xml.rels').async("string").then(function (relsXml) {
+                return extractImagesFromZip(zip, relsXml).then(function (images) {
+                    return convertDocumentXmlToHtml(documentXml, images);
+                });
+            });
         });
     });
 }
 
-// Function to extract images and convert them to Base64
-function extractImagesFromZip(zip) {
+// Function to extract images from the .dotx file using the relationship file
+function extractImagesFromZip(zip, relsXml) {
     var images = {};
-    var mediaFiles = zip.folder("word/media");
-    var imagePromises = [];
+    var parser = new DOMParser();
+    var relsDoc = parser.parseFromString(relsXml, "application/xml");
+    var relationships = relsDoc.getElementsByTagName("Relationship");
 
-    if (mediaFiles) {
-        mediaFiles.forEach(function (relativePath, file) {
-            var promise = file.async("base64").then(function (base64) {
-                images[relativePath] = "data:image/" + getImageExtension(relativePath) + ";base64," + base64;
+    var imagePromises = [];
+    for (var i = 0; i < relationships.length; i++) {
+        var rel = relationships[i];
+        var id = rel.getAttribute("Id");
+        var target = rel.getAttribute("Target");
+
+        // Check if the target is in the media folder
+        if (target && target.startsWith("media/")) {
+            var imagePath = "word/" + target;
+            var promise = zip.file(imagePath).async("base64").then(function (base64) {
+                images[id] = "data:image/" + getImageExtension(target) + ";base64," + base64;
             });
             imagePromises.push(promise);
-        });
+        }
     }
 
     return Promise.all(imagePromises).then(function () {
@@ -134,20 +141,22 @@ function convertDocumentXmlToHtml(xml, images) {
     }
 
     // Embed images in the HTML
-    var imageRefs = xmlDoc.getElementsByTagName("w:drawing");
-    for (var k = 0; k < imageRefs.length; k++) {
-        var blip = imageRefs[k].getElementsByTagName("a:blip")[0];
+    var drawingElements = xmlDoc.getElementsByTagName("w:drawing");
+    for (var k = 0; k < drawingElements.length; k++) {
+        var blip = drawingElements[k].getElementsByTagName("a:blip")[0];
         if (blip) {
-            var embed = blip.getAttribute("r:embed");
-            var imageName = "word/media/" + embed;
-            if (images[imageName]) {
-                html += '<img src="' + images[imageName] + '" />';
+            var embedId = blip.getAttribute("r:embed");
+            if (embedId && images[embedId]) {
+                html += '<img src="' + images[embedId] + '" />';
             }
         }
     }
 
     return html;
 }
+
+
+
 
 //END OF THAT
 
