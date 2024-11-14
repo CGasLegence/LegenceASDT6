@@ -27,6 +27,8 @@ function loadSignatureFromFile() {
         return null;
     }
 }
+let htmlContentInMemory = "";
+
 //This inserts the signature from the "Get"
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
@@ -41,7 +43,7 @@ function checkSignature(eventObj) {
         if (signature) {
             // Set the loaded signature in the email
             Office.context.mailbox.item.body.setSignatureAsync(
-                htmlContent,
+                htmlContentInMemory,
                 { coercionType: "html" },
                 function (asyncResult) {
                     console.log(`setSignatureAsync: ${asyncResult.status}`);
@@ -57,101 +59,36 @@ function checkSignature(eventObj) {
 }
 // Function to convert .dotx content to HTML with Base64 images
 function convertTemplateToHtml(callback) {
-    var filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
+    const filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
 
     fetch(filePath)
-        .then(function (response) {
-            if (!response.ok) throw new Error('Failed to fetch file: ' + response.statusText);
+        .then(response => {
+            if (!response.ok) throw new Error(`Failed to fetch file: ${response.statusText}`);
             return response.arrayBuffer();
         })
-        .then(function (arrayBuffer) {
-            return convertDotxToHtmlWithImages(arrayBuffer);
-        })
-        .then(function (htmlContent) {
-            callback(htmlContent);
-        })
-        .catch(function (error) {
-            console.error("Error fetching or converting .dotx file:", error);
-        });
-}
-
-function convertDotxToHtmlWithImages(arrayBuffer) {
-    var zip = new JSZip();
-    return zip.loadAsync(arrayBuffer).then(function () {
-        return zip.file('word/document.xml').async("string").then(function (documentXml) {
-            return zip.file('word/_rels/document.xml.rels').async("string").then(function (relsXml) {
-                return extractImagesFromZip(zip, relsXml).then(function (images) {
-                    return convertDocumentXmlToHtml(documentXml, images);
-                });
+        .then(arrayBuffer => {
+            // Convert the .dotx content to HTML using mammoth.js
+            return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
+                convertImage: mammoth.images.imgElement(image => {
+                    return image.readAsBase64().then(base64 => {
+                        return {
+                            src: "data:" + image.contentType + ";base64," + base64
+                        };
+                    });
+                })
             });
+        })
+        .then(result => {
+            // Store the converted HTML content in memory
+            htmlContentInMemory = result.value;
+            console.log("HTML content loaded into memory:", htmlContentInMemory);
+
+            // Call the callback function if provided
+            if (callback) callback(htmlContentInMemory);
+        })
+        .catch(error => {
+            console.error("Error converting .dotx file:", error);
         });
-    });
-}
-
-// Function to extract images from the .dotx file using the relationship file
-function extractImagesFromZip(zip, relsXml) {
-    var images = {};
-    var parser = new DOMParser();
-    var relsDoc = parser.parseFromString(relsXml, "application/xml");
-    var relationships = relsDoc.getElementsByTagName("Relationship");
-
-    var imagePromises = [];
-    for (var i = 0; i < relationships.length; i++) {
-        var rel = relationships[i];
-        var id = rel.getAttribute("Id");
-        var target = rel.getAttribute("Target");
-
-        // Check if the target is in the media folder
-        if (target && target.startsWith("media/")) {
-            let imagePath = "word/" + target;
-            let promise = zip.file(imagePath).async("base64").then(function (base64) {
-                images[id] = "data:image/" + getImageExtension(target) + ";base64," + base64;
-            });
-            imagePromises.push(promise);
-        }
-    }
-
-    return Promise.all(imagePromises).then(function () {
-        return images;
-    });
-}
-
-function getImageExtension(filename) {
-    var ext = filename.split('.').pop().toLowerCase();
-    return ext === 'jpeg' || ext === 'jpg' ? 'jpeg' : ext;
-}
-
-// Function to convert the document XML to HTML and embed Base64 images
-function convertDocumentXmlToHtml(xml, images) {
-    var parser = new DOMParser();
-    var xmlDoc = parser.parseFromString(xml, "application/xml");
-
-    var html = "";
-    var paragraphs = xmlDoc.getElementsByTagName("w:p");
-    for (var i = 0; i < paragraphs.length; i++) {
-        var paragraphHtml = "<p>";
-        var texts = paragraphs[i].getElementsByTagName("w:t");
-        for (var j = 0; j < texts.length; j++) {
-            paragraphHtml += texts[j].textContent;
-        }
-        paragraphHtml += "</p>";
-        html += paragraphHtml;
-    }
-
-    // Embed all images in the HTML
-    var drawingElements = xmlDoc.getElementsByTagName("w:drawing");
-    for (var k = 0; k < drawingElements.length; k++) {
-        var blipElements = drawingElements[k].getElementsByTagName("a:blip");
-        for (var l = 0; l < blipElements.length; l++) {
-            var blip = blipElements[l];
-            var embedId = blip.getAttribute("r:embed");
-            if (embedId && images[embedId]) {
-                html += '<img src="' + images[embedId] + '" />';
-            }
-        }
-    }
-
-    return html;
 }
 
 
