@@ -589,6 +589,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="src\Templates\CMTA.dotx" />
+    <Content Include="src\Templates\CMTA.docx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

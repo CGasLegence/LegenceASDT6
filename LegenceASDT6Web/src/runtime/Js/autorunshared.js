@@ -60,7 +60,7 @@ function checkSignature(eventObj) {
 
 // Function to load the .dotx file and convert it to HTML
 function loadAndConvertTemplate(callback) {
-    const filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
+    const filePath = '../../Templates/CMTA.docx'; // Adjust the path as needed
 
     // Fetch the .dotx file
     fetch(filePath)
