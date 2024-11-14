@@ -33,26 +33,29 @@ function checkSignature(eventObj) {
 
     // Load the signature synchronously
     const signature = loadSignatureFromFile();
+
+    // Convert the .dotx template to HTML and use it as a signature
     convertTemplateToHtml(function (htmlContent) {
         console.log("HTML content:", htmlContent);
-       // useHtmlContent(htmlContent);
 
-    if (signature) {
-        // Set the loaded signature in the email
-        Office.context.mailbox.item.body.setSignatureAsync(
-            htmlContent,
-            { coercionType: "html" },
-            function (asyncResult) {
-                console.log(`setSignatureAsync: ${asyncResult.status}`);
-                if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
-                    console.error('Failed to set signature:', asyncResult.error.message);
+        if (signature) {
+            // Set the loaded signature in the email
+            Office.context.mailbox.item.body.setSignatureAsync(
+                htmlContent,
+                { coercionType: "html" },
+                function (asyncResult) {
+                    console.log(`setSignatureAsync: ${asyncResult.status}`);
+                    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
+                        console.error('Failed to set signature:', asyncResult.error.message);
+                    }
                 }
-            }
-        );
-    } else {
-        console.error('No signature loaded.');
-    }
+            );
+        } else {
+            console.error('No signature loaded.');
+        }
+    }); // Closing bracket for convertTemplateToHtml callback function
 }
+
 //This portion converts the dotx over to HTML to be used.
 function convertTemplateToHtml(callback) {
     var filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
@@ -156,9 +159,9 @@ function convertDocumentXmlToHtml(xml, images) {
  * @param {*} eventObj Office event object
  */
 function insert_auto_signature(compose_type, user_info, eventObj) {
-  let template_name = get_template_name(compose_type);
-  let signature_info = get_signature_info(template_name, user_info);
-  addTemplateSignature(signature_info, eventObj);
+    let template_name = get_template_name(compose_type);
+    let signature_info = get_signature_info(template_name, user_info);
+    addTemplateSignature(signature_info, eventObj);
 }
 
 /**
@@ -171,60 +174,60 @@ function insert_auto_signature(compose_type, user_info, eventObj) {
  * @param {*} signatureImageBase64 
  */
 function addTemplateSignature(signatureDetails, eventObj, signatureImageBase64) {
-  if (is_valid_data(signatureDetails.logoBase64) === true) {
-    //If a base64 image was passed we need to attach it.
-    Office.context.mailbox.item.addFileAttachmentFromBase64Async(
-      signatureDetails.logoBase64,
-      signatureDetails.logoFileName,
-      {
-        isInline: true,
-      },
-      function (result) {
-        //After image is attached, insert the signature
-        Office.context.mailbox.item.body.setSignatureAsync(
-          signatureDetails.signature,
-          {
-            coercionType: "html",
-            asyncContext: eventObj,
-          },
-          function (asyncResult) {
-            asyncResult.asyncContext.completed();
-          }
+    if (is_valid_data(signatureDetails.logoBase64) === true) {
+        //If a base64 image was passed we need to attach it.
+        Office.context.mailbox.item.addFileAttachmentFromBase64Async(
+            signatureDetails.logoBase64,
+            signatureDetails.logoFileName,
+            {
+                isInline: true,
+            },
+            function (result) {
+                //After image is attached, insert the signature
+                Office.context.mailbox.item.body.setSignatureAsync(
+                    signatureDetails.signature,
+                    {
+                        coercionType: "html",
+                        asyncContext: eventObj,
+                    },
+                    function (asyncResult) {
+                        asyncResult.asyncContext.completed();
+                    }
+                );
+            }
         );
-      }
-    );
-  } else {
-    //Image is not embedded, or is referenced from template HTML
-    Office.context.mailbox.item.body.setSignatureAsync(
-      signatureDetails.signature,
-      {
-        coercionType: "html",
-        asyncContext: eventObj,
-      },
-      function (asyncResult) {
-        asyncResult.asyncContext.completed();
-      }
-    );
-  }
+    } else {
+        //Image is not embedded, or is referenced from template HTML
+        Office.context.mailbox.item.body.setSignatureAsync(
+            signatureDetails.signature,
+            {
+                coercionType: "html",
+                asyncContext: eventObj,
+            },
+            function (asyncResult) {
+                asyncResult.asyncContext.completed();
+            }
+        );
+    }
 }
 
 /**
  * Creates information bar to display when new message or appointment is created
  */
 function display_insight_infobar() {
-  Office.context.mailbox.item.notificationMessages.addAsync("fd90eb33431b46f58a68720c36154b4a", {
-    type: "insightMessage",
-    message: "Signature Missing from Legence",
-    icon: "Icon.16x16",
-    actions: [
-      {
-        actionType: "showTaskPane",
-        actionText: "Set signatures",
-        commandId: get_command_id(),
-        contextData: "{''}",
-      },
-    ],
-  });
+    Office.context.mailbox.item.notificationMessages.addAsync("fd90eb33431b46f58a68720c36154b4a", {
+        type: "insightMessage",
+        message: "Signature Missing from Legence",
+        icon: "Icon.16x16",
+        actions: [
+            {
+                actionType: "showTaskPane",
+                actionText: "Set signatures",
+                commandId: get_command_id(),
+                contextData: "{''}",
+            },
+        ],
+    });
 }
 
 /**
@@ -233,9 +236,9 @@ function display_insight_infobar() {
  * @returns Name of the template to use for the compose type
  */
 function get_template_name(compose_type) {
-  if (compose_type === "reply") return Office.context.roamingSettings.get("reply");
-  if (compose_type === "forward") return Office.context.roamingSettings.get("forward");
-  return Office.context.roamingSettings.get("newMail");
+    if (compose_type === "reply") return Office.context.roamingSettings.get("reply");
+    if (compose_type === "forward") return Office.context.roamingSettings.get("forward");
+    return Office.context.roamingSettings.get("newMail");
 }
 
 /**
@@ -245,9 +248,9 @@ function get_template_name(compose_type) {
  * @returns HTML signature in requested template format
  */
 function get_signature_info(template_name, user_info) {
-  if (template_name === "templateB") return get_template_B_info(user_info);
-  if (template_name === "templateC") return get_template_C_info(user_info);
-  return get_template_A_info(user_info);
+    if (template_name === "templateB") return get_template_B_info(user_info);
+    if (template_name === "templateC") return get_template_C_info(user_info);
+    return get_template_A_info(user_info);
 }
 
 /**
@@ -255,10 +258,10 @@ function get_signature_info(template_name, user_info) {
  * @returns The command id
  */
 function get_command_id() {
-  if (Office.context.mailbox.item.itemType == "appointment") {
-    return "MRCS_TpBtn1";
-  }
-  return "MRCS_TpBtn0";
+    if (Office.context.mailbox.item.itemType == "appointment") {
+        return "MRCS_TpBtn1";
+    }
+    return "MRCS_TpBtn0";
 }
 
 /**
@@ -271,37 +274,37 @@ function get_command_id() {
     "logoFileName": The filename of the logo image
  */
 function get_template_A_info(user_info) {
-  const logoFileName = "sample-logo.png";
-  let str = "";
-  if (is_valid_data(user_info.greeting)) {
-    str += user_info.greeting + "<br/>";
-  }
+    const logoFileName = "sample-logo.png";
+    let str = "";
+    if (is_valid_data(user_info.greeting)) {
+        str += user_info.greeting + "<br/>";
+    }
 
-  str += "<table>";
-  str += "<tr>";
-  // Embed the logo using <img src='cid:...
-  str +=
-    "<td style='border-right: 1px solid #000000; padding-right: 5px;'><img src='cid:" +
-    logoFileName +
-    "' alt='MS Logo' width='24' height='24' /></td>";
-  str += "<td style='padding-left: 5px;'>";
-  str += "<strong>" + user_info.name + "</strong>";
-  str += is_valid_data(user_info.pronoun) ? "&nbsp;" + user_info.pronoun : "";
-  str += "<br/>";
-  str += is_valid_data(user_info.job) ? user_info.job + "<br/>" : "";
-  str += user_info.email + "<br/>";
-  str += is_valid_data(user_info.phone) ? user_info.phone + "<br/>" : "";
-  str += "</td>";
-  str += "</tr>";
-  str += "</table>";
+    str += "<table>";
+    str += "<tr>";
+    // Embed the logo using <img src='cid:...
+    str +=
+        "<td style='border-right: 1px solid #000000; padding-right: 5px;'><img src='cid:" +
+        logoFileName +
+        "' alt='MS Logo' width='24' height='24' /></td>";
+    str += "<td style='padding-left: 5px;'>";
+    str += "<strong>" + user_info.name + "</strong>";
+    str += is_valid_data(user_info.pronoun) ? "&nbsp;" + user_info.pronoun : "";
+    str += "<br/>";
+    str += is_valid_data(user_info.job) ? user_info.job + "<br/>" : "";
+    str += user_info.email + "<br/>";
+    str += is_valid_data(user_info.phone) ? user_info.phone + "<br/>" : "";
+    str += "</td>";
+    str += "</tr>";
+    str += "</table>";
 
-  // return object with signature HTML, logo image base64 string, and filename to reference it with.
-  return {
-    signature: str,
-    logoBase64:
-      "iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAEeSURBVFhHzdhBEoIwDIVh4EoeQJd6YrceQM+kvo5hQNokLymO/4aF0/ajlBl1fL4bEp0uj3K9XQ/lGi0MEcB3UdD0uVK1EEj7TIuGeBaKYCgIswCLcUMid8mMcUEiCMk71oRYE+Etsd4UD0aFeBBSFtOEMAgpg6lCIggpitlAMggpgllBeiAkFjNDeiIkBlMgeyAkL6Z6WJdlEJJnjvF4vje/BvRALNN23tyRXzVpd22dHSZtLhjMHemB8cxRINZZyGCssbL2vCN7YLwItHo0PTEMAm3OSA8Mi0DVw5rBRBCoCkERTBSBmhDEYDII5PqlZy1iZSGQuiOSZ6JW3rEuCIpgmDFuCGImZuEUBHkWiOweDUHaQhEE+pM/aobhBZaOpYLJeeeoAAAAAElFTkSuQmCC",
-    logoFileName: logoFileName,
-  };
+    // return object with signature HTML, logo image base64 string, and filename to reference it with.
+    return {
+        signature: str,
+        logoBase64:
+            "iVBORw0KGgoAAAANSUhEUgAAACIAAAAiCAYAAAA6RwvCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAEeSURBVFhHzdhBEoIwDIVh4EoeQJd6YrceQM+kvo5hQNokLymO/4aF0/ajlBl1fL4bEp0uj3K9XQ/lGi0MEcB3UdD0uVK1EEj7TIuGeBaKYCgIswCLcUMid8mMcUEiCMk71oRYE+Etsd4UD0aFeBBSFtOEMAgpg6lCIggpitlAMggpgllBeiAkFjNDeiIkBlMgeyAkL6Z6WJdlEJJnjvF4vje/BvRALNN23tyRXzVpd22dHSZtLhjMHemB8cxRINZZyGCssbL2vCN7YLwItHo0PTEMAm3OSA8Mi0DVw5rBRBCoCkERTBSBmhDEYDII5PqlZy1iZSGQuiOSZ6JW3rEuCIpgmDFuCGImZuEUBHkWiOweDUHaQhEE+pM/aobhBZaOpYLJeeeoAAAAAElFTkSuQmCC",
+        logoFileName: logoFileName,
+    };
 }
 
 /**
@@ -314,31 +317,31 @@ function get_template_A_info(user_info) {
     "logoFileName": null since this template references the image and does not embed it
  */
 function get_template_B_info(user_info) {
-  let str = "";
-  if (is_valid_data(user_info.greeting)) {
-    str += user_info.greeting + "<br/>";
-  }
+    let str = "";
+    if (is_valid_data(user_info.greeting)) {
+        str += user_info.greeting + "<br/>";
+    }
 
-  str += "<table>";
-  str += "<tr>";
-  // Reference the logo using a URI to the web server <img src='https://...
-  str +=
-    "<td style='border-right: 1px solid #000000; padding-right: 5px;'><img src='https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/assets/sample-logo.png' alt='Logo' /></td>";
-  str += "<td style='padding-left: 5px;'>";
-  str += "<strong>" + user_info.name + "</strong>";
-  str += is_valid_data(user_info.pronoun) ? "&nbsp;" + user_info.pronoun : "";
-  str += "<br/>";
-  str += user_info.email + "<br/>";
-  str += is_valid_data(user_info.phone) ? user_info.phone + "<br/>" : "";
-  str += "</td>";
-  str += "</tr>";
-  str += "</table>";
+    str += "<table>";
+    str += "<tr>";
+    // Reference the logo using a URI to the web server <img src='https://...
+    str +=
+        "<td style='border-right: 1px solid #000000; padding-right: 5px;'><img src='https://officedev.github.io/Office-Add-in-samples/Samples/outlook-set-signature/assets/sample-logo.png' alt='Logo' /></td>";
+    str += "<td style='padding-left: 5px;'>";
+    str += "<strong>" + user_info.name + "</strong>";
+    str += is_valid_data(user_info.pronoun) ? "&nbsp;" + user_info.pronoun : "";
+    str += "<br/>";
+    str += user_info.email + "<br/>";
+    str += is_valid_data(user_info.phone) ? user_info.phone + "<br/>" : "";
+    str += "</td>";
+    str += "</tr>";
+    str += "</table>";
 
-  return {
-    signature: str,
-    logoBase64: null,
-    logoFileName: null,
-  };
+    return {
+        signature: str,
+        logoBase64: null,
+        logoFileName: null,
+    };
 }
 
 /**
@@ -350,18 +353,18 @@ function get_template_B_info(user_info) {
     "logoFileName": null since there is no image
  */
 function get_template_C_info(user_info) {
-  let str = "";
-  if (is_valid_data(user_info.greeting)) {
-    str += user_info.greeting + "<br/>";
-  }
+    let str = "";
+    if (is_valid_data(user_info.greeting)) {
+        str += user_info.greeting + "<br/>";
+    }
 
-  str += user_info.name;
+    str += user_info.name;
 
-  return {
-    signature: str,
-    logoBase64: null,
-    logoFileName: null,
-  };
+    return {
+        signature: str,
+        logoBase64: null,
+        logoFileName: null,
+    };
 }
 
 /**
@@ -370,7 +373,7 @@ function get_template_C_info(user_info) {
  * @returns true if string is valid; otherwise, false.
  */
 function is_valid_data(str) {
-  return str !== null && str !== undefined && str !== "";
+    return str !== null && str !== undefined && str !== "";
 }
 
 Office.actions.associate("checkSignature", checkSignature);
