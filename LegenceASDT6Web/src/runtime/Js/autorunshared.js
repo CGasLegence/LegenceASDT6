@@ -55,27 +55,6 @@ function checkSignature(eventObj) {
         }
     }); // Closing bracket for convertTemplateToHtml callback function
 }
-
-//This portion converts the dotx over to HTML to be used.
-function convertTemplateToHtml(callback) {
-    var filePath = '../../Templates/CMTA.dotx'; // Adjust the path as needed
-
-    fetch(filePath)
-        .then(function (response) {
-            if (!response.ok) throw new Error('Failed to fetch file: ' + response.statusText);
-            return response.arrayBuffer();
-        })
-        .then(function (arrayBuffer) {
-            return convertDotxToHtmlWithImages(arrayBuffer);
-        })
-        .then(function (htmlContent) {
-            callback(htmlContent);
-        })
-        .catch(function (error) {
-            console.error("Error fetching or converting .dotx file:", error);
-        });
-}
-
 // Function to convert .dotx content to HTML with Base64 images
 function convertDotxToHtmlWithImages(arrayBuffer) {
     var zip = new JSZip();
@@ -105,8 +84,8 @@ function extractImagesFromZip(zip, relsXml) {
 
         // Check if the target is in the media folder
         if (target && target.startsWith("media/")) {
-            var imagePath = "word/" + target;
-            var promise = zip.file(imagePath).async("base64").then(function (base64) {
+            let imagePath = "word/" + target;
+            let promise = zip.file(imagePath).async("base64").then(function (base64) {
                 images[id] = "data:image/" + getImageExtension(target) + ";base64," + base64;
             });
             imagePromises.push(promise);
@@ -140,11 +119,12 @@ function convertDocumentXmlToHtml(xml, images) {
         html += paragraphHtml;
     }
 
-    // Embed images in the HTML
+    // Embed all images in the HTML
     var drawingElements = xmlDoc.getElementsByTagName("w:drawing");
     for (var k = 0; k < drawingElements.length; k++) {
-        var blip = drawingElements[k].getElementsByTagName("a:blip")[0];
-        if (blip) {
+        var blipElements = drawingElements[k].getElementsByTagName("a:blip");
+        for (var l = 0; l < blipElements.length; l++) {
+            var blip = blipElements[l];
             var embedId = blip.getAttribute("r:embed");
             if (embedId && images[embedId]) {
                 html += '<img src="' + images[embedId] + '" />';
@@ -154,7 +134,6 @@ function convertDocumentXmlToHtml(xml, images) {
 
     return html;
 }
-
 
 
 
