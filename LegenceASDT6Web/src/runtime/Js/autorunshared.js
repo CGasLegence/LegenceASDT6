@@ -27,6 +27,30 @@ function loadSignatureFromFile() {
         return null;
     }
 }
+function loadAndEditSignatureFromFile() {
+    const filePath = '../../Templates/Legence.htm';
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', filePath, false); // Synchronous request
+
+    try {
+        xhr.send();
+        if (xhr.status === 200) {
+            let content = xhr.responseText;
+
+            // Replace placeholder &username with actual name
+            const username = "Corey Gashlin";
+            content = content.replace(/&username/g, username);
+
+            return content;
+        } else {
+            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching HTML file:', error);
+        return null;
+    }
+}
 // Variable to store HTML content in memory
 let htmlContentInMemory = "";
 
@@ -43,7 +67,7 @@ function checkSignature(eventObj) {
 
         if (signature) {
             Office.context.mailbox.item.body.setSignatureAsync(
-                htmlContent, // Use htmlContent passed by the callback
+                loadAndEditSignatureFromFile(), // Use htmlContent passed by the callback
                 { coercionType: "html" },
                 function (asyncResult) {
                     console.log(`setSignatureAsync: ${asyncResult.status}`);
@@ -74,6 +98,7 @@ function loadAndConvertTemplate(callback) {
             // Convert to HTML using mammoth.js
             return mammoth.convertToHtml({ arrayBuffer: arrayBuffer }, {
                 convertImage: mammoth.images.imgElement(image => {
+                    console.log("Found image:", image.contentType);
                     return image.readAsBase64().then(base64 => {
                         return {
                             src: "data:" + image.contentType + ";base64," + base64
