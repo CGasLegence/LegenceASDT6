@@ -65,7 +65,7 @@ function convertTemplateToHtml(callback) {
             return response.arrayBuffer();
         })
         .then(function (arrayBuffer) {
-            return convertDotxToHtmlWithImages(arrayBuffer); // Updated function call
+            return convertDotxToHtmlWithImages(arrayBuffer);
         })
         .then(function (htmlContent) {
             callback(htmlContent);
@@ -74,6 +74,7 @@ function convertTemplateToHtml(callback) {
             console.error("Error fetching or converting .dotx file:", error);
         });
 }
+
 function convertDotxToHtmlWithImages(arrayBuffer) {
     var zip = new JSZip();
     return zip.loadAsync(arrayBuffer).then(function () {
