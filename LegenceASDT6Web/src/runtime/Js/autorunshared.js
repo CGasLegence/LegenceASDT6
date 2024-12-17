@@ -13,8 +13,15 @@
 
 //This is a test
 async function loadSignatureFromFile() {
-    // Append a timestamp to force a fresh fetch
-    const filePath = `https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html?cb=${new Date().getTime()}`;
+    // Get the current user's email address
+    const userEmail = Office.context.mailbox.userProfile.emailAddress;
+
+    // Encode the email to ensure it's URL-safe
+    const encodedEmail = encodeURIComponent(userEmail);
+
+    // Dynamically build the file path with the user's email
+    const filePath = `https://siggy.wearelegence.com/users/${encodedEmail}.html?cb=${new Date().getTime()}`;
+
     try {
         const response = await fetch(filePath, { cache: "no-store" }); // no-store ensures no caching
         if (!response.ok) {
@@ -26,6 +33,7 @@ async function loadSignatureFromFile() {
         return null;
     }
 }
+
 
 async function checkSignature(eventObj) {
     const signature = await loadSignatureFromFile();
