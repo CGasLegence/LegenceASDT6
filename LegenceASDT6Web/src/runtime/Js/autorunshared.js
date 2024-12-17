@@ -11,7 +11,7 @@
  * @returns
  */
 function loadSignatureFromFile() {
-    const filePath = '../../Templates/Legence.htm';
+    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
     let xhr = new XMLHttpRequest();
     xhr.open('GET', filePath, false); // Synchronous request
     try {
@@ -28,7 +28,7 @@ function loadSignatureFromFile() {
     }
 }
 function loadAndEditSignatureFromFile() {
-    const filePath = '../../Templates/Legence.htm';
+    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
     let xhr = new XMLHttpRequest();
     xhr.open('GET', filePath, false); // Synchronous request
 
