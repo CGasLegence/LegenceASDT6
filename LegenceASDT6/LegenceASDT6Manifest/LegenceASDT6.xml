@@ -51,6 +51,31 @@
 							<Override type="javascript" resid="runtimeJs"/>
 						</Runtime>
 					</Runtimes>
+					<MobileFormFactor>
+						<!-- Compose scenario for Outlook Mobile -->
+						<ExtensionPoint xsi:type="MessageComposeCommandSurface">
+							<OfficeTab id="TabDefault">
+								<Group id="composeGroupMobile">
+									<Label resid="residGL0"/>
+									<Control xsi:type="Button" id="MRCS_MobileBtn0">
+										<Label resid="residStr0"/>
+										<Supertip>
+											<Title resid="residStr0"/>
+											<Description resid="residTT0"/>
+										</Supertip>
+										<Icon>
+											<bt:Image size="16" resid="Icon16x16"/>
+											<bt:Image size="32" resid="Icon16x16"/>
+											<bt:Image size="80" resid="Icon16x16"/>
+										</Icon>
+										<Action xsi:type="ExecuteFunction">
+											<FunctionName>checkSignature</FunctionName>
+										</Action>
+									</Control>
+								</Group>
+							</OfficeTab>
+						</ExtensionPoint>
+					</MobileFormFactor>
 					<DesktopFormFactor>
 						<ExtensionPoint xsi:type="MessageComposeCommandSurface">
 							<OfficeTab id="TabDefault">
@@ -118,10 +143,10 @@
 				</bt:Urls>
 				<bt:ShortStrings>
 					<bt:String id="residGL0" DefaultValue="Signature Injector"/>
-					<bt:String id="residStr0" DefaultValue="Set my signature"/>
+					<bt:String id="residStr0" DefaultValue="Legence Siggy"/>
 				</bt:ShortStrings>
 				<bt:LongStrings>
-					<bt:String id="residAppDesc" DefaultValue="Insert your signature with ease."/>
+					<bt:String id="residAppDesc" DefaultValue="Legence BU signature Deployment Tool"/>
 					<bt:String id="residTT0" DefaultValue="Opens a pane displaying all available properties."/>
 				</bt:LongStrings>
 			</Resources>
