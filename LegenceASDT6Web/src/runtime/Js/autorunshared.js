@@ -10,38 +10,50 @@
  * @param {*} eventObj Office event object
  * @returns
  */
+function loadSignatureFromFile() {
+    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', filePath, false); // Synchronous request
+    try {
+        xhr.send();
+        if (xhr.status === 200) {
+            return xhr.responseText;
+        } else {
+            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching HTML file:', error);
+        return null;
+    }
+}
+
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
-    if (!user_info_str) {
-        display_insight_infobar();
-    } else {
-        let user_info = JSON.parse(user_info_str);
 
-        if (Office.context.mailbox.item.getComposeTypeAsync) {
-            //Find out if the compose type is "newEmail", "reply", or "forward" so that we can apply the correct template.
-            Office.context.mailbox.item.getComposeTypeAsync(
-                {
-                    asyncContext: {
-                        user_info: user_info,
-                        eventObj: eventObj,
-                    },
-                },
+    // Load the signature synchronously
+    const signature = loadSignatureFromFile();
+
+    // Convert the template to HTML and use it for the signature
+    loadAndConvertTemplate(function (htmlContent) {
+        console.log("HTML content:", htmlContent);
+
+        if (signature) {
+            Office.context.mailbox.item.body.setSignatureAsync(
+                loadAndEditSignatureFromFile(), // Use htmlContent passed by the callback
+                { coercionType: "html" },
                 function (asyncResult) {
-                    if (asyncResult.status === "succeeded") {
-                        insert_auto_signature(
-                            asyncResult.value.composeType,
-                            asyncResult.asyncContext.user_info,
-                            asyncResult.asyncContext.eventObj
-                        );
+                    console.log(`setSignatureAsync: ${asyncResult.status}`);
+                    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
+                        console.error('Failed to set signature:', asyncResult.error.message);
                     }
                 }
             );
         } else {
-            // Appointment item. Just use newMail pattern
-            let user_info = JSON.parse(user_info_str);
-            insert_auto_signature("newMail", user_info, eventObj);
+            console.error('No signature loaded.');
         }
-    }
+    });
+
 }
 
 /**
