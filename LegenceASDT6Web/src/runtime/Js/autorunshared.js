@@ -10,50 +10,40 @@
  * @param {*} eventObj Office event object
  * @returns
  */
-function loadSignatureFromFile() {
+async function loadSignatureFromFile() {
     const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', filePath, false); // Synchronous request
     try {
-        xhr.send();
-        if (xhr.status === 200) {
-            return xhr.responseText;
-        } else {
-            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
-            return null;
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
         }
+        return await response.text();
     } catch (error) {
         console.error('Error fetching HTML file:', error);
         return null;
     }
 }
 
-function checkSignature(eventObj) {
-    let user_info_str = Office.context.roamingSettings.get("user_info");
+async function checkSignature(eventObj) {
+    const signature = await loadSignatureFromFile();
 
-    // Load the signature synchronously
-    const signature = loadSignatureFromFile();
-
-    // Convert the template to HTML and use it for the signature
-    loadAndConvertTemplate(function (htmlContent) {
-        console.log("HTML content:", htmlContent);
-
-        if (signature) {
-            Office.context.mailbox.item.body.setSignatureAsync(
-                loadAndEditSignatureFromFile(), // Use htmlContent passed by the callback
-                { coercionType: "html" },
-                function (asyncResult) {
-                    console.log(`setSignatureAsync: ${asyncResult.status}`);
-                    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
-                        console.error('Failed to set signature:', asyncResult.error.message);
-                    }
+    if (signature) {
+        Office.context.mailbox.item.body.setSignatureAsync(
+            signature,
+            { coercionType: "html" },
+            function (asyncResult) {
+                if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
+                    console.log("Signature applied successfully.");
+                } else {
+                    console.error('Failed to set signature:', asyncResult.error.message);
                 }
-            );
-        } else {
-            console.error('No signature loaded.');
-        }
-    });
-
+                eventObj.completed();
+            }
+        );
+    } else {
+        console.error('No signature loaded.');
+        eventObj.completed();
+    }
 }
 
 /**
