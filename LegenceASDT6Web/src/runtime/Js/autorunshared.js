@@ -10,10 +10,13 @@
  * @param {*} eventObj Office event object
  * @returns
  */
+
+//This is a test
 async function loadSignatureFromFile() {
-    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
+    // Append a timestamp to force a fresh fetch
+    const filePath = `https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html?cb=${new Date().getTime()}`;
     try {
-        const response = await fetch(filePath);
+        const response = await fetch(filePath, { cache: "no-store" }); // no-store ensures no caching
         if (!response.ok) {
             throw new Error(`Failed to load file: ${response.status} ${response.statusText}`);
         }
