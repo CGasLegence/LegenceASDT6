@@ -1,5 +1,4 @@
-﻿This XML file does not appear to have any style information associated with it. The document tree is shown below.
-<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="MailApp">
+﻿<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="MailApp">
 	<Id>{C341AD31-BF7A-4C1D-99F1-D2E5896BFF0A}</Id>
 	<Version>1.0</Version>
 	<ProviderName>Legence</ProviderName>
@@ -20,7 +19,7 @@
 			<Set Name="Mailbox"/>
 		</Sets>
 	</Requirements>
-	<!--   Old schema. This will be overridden by the VersionOverrides below.   -->
+	<!--  Old schema. This will be overridden by the VersionOverrides below.  -->
 	<FormSettings>
 		<Form xsi:type="ItemRead">
 			<DesktopSettings>
@@ -34,7 +33,7 @@
 		<Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
 	</Rule>
 	<DisableEntityHighlighting>true</DisableEntityHighlighting>
-	<!--   /Old schema.   -->
+	<!--  /Old schema.  -->
 	<VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
 		<VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
 			<Description resid="residAppDesc"/>
@@ -45,8 +44,8 @@
 			</Requirements>
 			<Hosts>
 				<Host xsi:type="MailHost">
-					<!--   Specify the runtime for event-based activation.   -->
-					<!--   For more information, see https://learn.microsoft.com/office/dev/add-ins/outlook/autolaunch   -->
+					<!--  Specify the runtime for event-based activation.  -->
+					<!--  For more information, see https://learn.microsoft.com/office/dev/add-ins/outlook/autolaunch  -->
 					<Runtimes>
 						<Runtime resid="Autorun">
 							<Override type="javascript" resid="runtimeJs"/>
@@ -97,7 +96,7 @@
 								</Group>
 							</OfficeTab>
 						</ExtensionPoint>
-						<!--   Specify function to call for new message and new appointment events   -->
+						<!--  Specify function to call for new message and new appointment events  -->
 						<ExtensionPoint xsi:type="LaunchEvent">
 							<LaunchEvents>
 								<LaunchEvent Type="OnNewMessageCompose" FunctionName="checkSignature"/>
