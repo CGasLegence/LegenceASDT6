@@ -10,79 +10,39 @@
  * @param {*} eventObj Office event object
  * @returns
  */
-function loadSignatureFromFile() {
-    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', filePath, false); // Synchronous request
-    try {
-        xhr.send();
-        if (xhr.status === 200) {
-            return xhr.responseText;
-        } else {
-            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching HTML file:', error);
-        return null;
-    }
-}
-function loadAndEditSignatureFromFile() {
-    const filePath = 'https://siggy.wearelegence.com/users/corey.gashlin@wearelegence.com.html';
-    let xhr = new XMLHttpRequest();
-    xhr.open('GET', filePath, false); // Synchronous request
-
-    try {
-        xhr.send();
-        if (xhr.status === 200) {
-            let content = xhr.responseText;
-
-            // Replace placeholder &username with actual name
-            const username = "Corey Gashlin";
-            content = content.replace(/&username/g, username);
-
-            return content;
-        } else {
-            console.error(`Failed to load file: ${xhr.status} ${xhr.statusText}`);
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching HTML file:', error);
-        return null;
-    }
-}
-// Variable to store HTML content in memory
-let htmlContentInMemory = "";
-
-// Function to check and set the signature
 function checkSignature(eventObj) {
     let user_info_str = Office.context.roamingSettings.get("user_info");
+    if (!user_info_str) {
+        display_insight_infobar();
+    } else {
+        let user_info = JSON.parse(user_info_str);
 
-    // Load the signature synchronously
-    const signature = loadSignatureFromFile();
-
-    // Convert the template to HTML and use it for the signature
-    loadAndConvertTemplate(function (htmlContent) {
-        console.log("HTML content:", htmlContent);
-
-        if (signature) {
-            Office.context.mailbox.item.body.setSignatureAsync(
-                loadAndEditSignatureFromFile(), // Use htmlContent passed by the callback
-                { coercionType: "html" },
+        if (Office.context.mailbox.item.getComposeTypeAsync) {
+            //Find out if the compose type is "newEmail", "reply", or "forward" so that we can apply the correct template.
+            Office.context.mailbox.item.getComposeTypeAsync(
+                {
+                    asyncContext: {
+                        user_info: user_info,
+                        eventObj: eventObj,
+                    },
+                },
                 function (asyncResult) {
-                    console.log(`setSignatureAsync: ${asyncResult.status}`);
-                    if (asyncResult.status !== Office.AsyncResultStatus.Succeeded) {
-                        console.error('Failed to set signature:', asyncResult.error.message);
+                    if (asyncResult.status === "succeeded") {
+                        insert_auto_signature(
+                            asyncResult.value.composeType,
+                            asyncResult.asyncContext.user_info,
+                            asyncResult.asyncContext.eventObj
+                        );
                     }
                 }
             );
         } else {
-            console.error('No signature loaded.');
+            // Appointment item. Just use newMail pattern
+            let user_info = JSON.parse(user_info_str);
+            insert_auto_signature("newMail", user_info, eventObj);
         }
-    });
+    }
 }
-
-
 
 /**
  * For Outlook on Windows and on Mac only. Insert signature into appointment or message.
@@ -150,7 +110,7 @@ function addTemplateSignature(signatureDetails, eventObj, signatureImageBase64) 
 function display_insight_infobar() {
     Office.context.mailbox.item.notificationMessages.addAsync("fd90eb33431b46f58a68720c36154b4a", {
         type: "insightMessage",
-        message: "Signature Missing from Legence",
+        message: "Please set your signature with the Office Add-ins sample.",
         icon: "Icon.16x16",
         actions: [
             {
