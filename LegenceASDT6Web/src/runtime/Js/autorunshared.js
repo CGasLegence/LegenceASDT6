@@ -54,6 +54,13 @@ async function checkSignature(eventObj) {
     const platform = Office.context.mailbox.diagnostics.hostName.toLowerCase();
 
     if (platform.includes("android") || platform.includes("ios")) {
+        const notification = {
+            type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+            message: "Detected Mobile Outlook",
+            icon: "none",
+            persistent: false,
+        };
+        Office.context.mailbox.item.notificationMessages.replaceAsync("signatureNotification", notification);
         console.log("Running logic for Android or iOS...");
         const item = Office.context.mailbox.item;
 
