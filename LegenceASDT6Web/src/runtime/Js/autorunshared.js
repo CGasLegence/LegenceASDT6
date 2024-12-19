@@ -33,29 +33,100 @@ async function loadSignatureFromFile() {
         return null;
     }
 }
+function cleanHtmlForWhitespace(html) {
+    // Create a hidden container to process the HTML
+    const container = document.createElement("div");
+    container.style.visibility = "hidden";
+    container.innerHTML = html;
+    document.body.appendChild(container);
 
+    // Normalize margins and padding for all elements
+    const allElements = container.querySelectorAll("*");
+    allElements.forEach((el) => {
+        el.style.margin = "0";
+        el.style.padding = "0";
+        el.style.lineHeight = "1.2"; // Adjust as needed for consistent spacing
+    });
+
+    // Extract cleaned-up HTML
+    const cleanedHtml = container.innerHTML;
+    document.body.removeChild(container);
+
+    return cleanedHtml;
+}
 
 async function checkSignature(eventObj) {
     const signature = await loadSignatureFromFile();
+    const platform = Office.context.mailbox.diagnostics.hostName.toLowerCase();
 
-    if (signature) {
-        Office.context.mailbox.item.body.setSignatureAsync(
-            signature,
-            { coercionType: "html" },
-            function (asyncResult) {
-                if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
-                    console.log("Signature applied successfully.");
-                } else {
-                    console.error('Failed to set signature:', asyncResult.error.message);
-                }
-                eventObj.completed();
+
+    if (platform.includes("android") || platform.includes("ios")) {
+        const item = Office.context.mailbox.item;
+
+        // Load and process the signature file
+        const rawHtmlSignature = await loadSignatureFromFile();
+        if (!rawHtmlSignature) {
+            console.error("Failed to load the signature.");
+            event.completed();
+            return;
+        }
+
+        // Clean the HTML to remove extra whitespace
+        const cleanedHtmlSignature = cleanHtmlForWhitespace(rawHtmlSignature);
+
+        // Insert the cleaned HTML into the email body
+        item.body.setSignatureAsync(cleanedHtmlSignature, { coercionType: Office.CoercionType.Html }, (result) => {
+            if (result.status === Office.AsyncResultStatus.Failed) {
+                console.error("Error inserting the signature:", result.error.message);
             }
-        );
-    } else {
-        console.error('No signature loaded.');
-        eventObj.completed();
+            event.completed();
+        });
+
+        // Add a notification to confirm success
+        const notification = {
+            type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+            message: "Mobile Signature added successfully",
+            icon: "none",
+            persistent: false
+        };
+        Office.context.mailbox.item.notificationMessages.replaceAsync("signatureNotification", notification);
+
     }
+    else {
+        if (signature) {
+            Office.context.mailbox.item.body.setSignatureAsync(
+                signature,
+                { coercionType: "html" },
+                function (asyncResult) {
+                    if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
+                        console.log("Signature applied successfully.");
+                    } else {
+                        console.error('Failed to set signature:', asyncResult.error.message);
+                    }
+                    eventObj.completed();
+                    const notification = {
+                        type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+                        message: "Desktop Signature added successfully",
+                        icon: "none",
+                        persistent: false
+                    };
+                    Office.context.mailbox.item.notificationMessages.replaceAsync("signatureNotification", notification);
+                }
+            );
+        } else {
+            console.error('No signature loaded.');
+            eventObj.completed();
+        }
+    }
+
 }
+
+
+//THis is for Mobile Outlook and it is a PIA... Do not change..function cleanHtmlForWhitespace(html) {
+// Create a hidden container to process the HTML
+
+
+
 
 /**
  * For Outlook on Windows and on Mac only. Insert signature into appointment or message.
