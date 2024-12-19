@@ -571,6 +571,7 @@
     <Content Include="src\runtime\HTML\autorunweb.html" />
     <Content Include="src\runtime\Js\autorunshared.js" />
     <Content Include="src\runtime\Js\autorunweb.js" />
+    <Content Include="src\runtime\Js\MobileTest.js" />
     <Content Include="src\taskpane\CSS\assignsignature.css" />
     <Content Include="src\taskpane\CSS\editsignature.css" />
     <Content Include="src\taskpane\HTML\assignsignature.html" />
