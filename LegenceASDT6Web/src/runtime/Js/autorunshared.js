@@ -53,45 +53,7 @@ function cleanHtmlForWhitespace(html) {
 async function checkSignature(eventObj) {
     const platform = Office.context.mailbox.diagnostics.hostName.toLowerCase();
 
-    if (platform.includes("android") || platform.includes("ios")) {
-        const notification = {
-            type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-            message: "Detected Mobile Outlook",
-            icon: "none",
-            persistent: false,
-        };
-        Office.context.mailbox.item.notificationMessages.replaceAsync("signatureNotification", notification);
-        console.log("Running logic for Android or iOS...");
-        const item = Office.context.mailbox.item;
 
-        // Load and process the signature file
-        const rawHtmlSignature = await loadSignatureFromFile();
-        if (!rawHtmlSignature) {
-            console.error("Failed to load the signature.");
-            eventObj.completed();
-            return;
-        }
-
-        // Clean the HTML to remove extra whitespace
-        const cleanedHtmlSignature = cleanHtmlForWhitespace(rawHtmlSignature);
-
-        // Insert the cleaned HTML into the email body
-        item.body.setSignatureAsync(cleanedHtmlSignature, { coercionType: Office.CoercionType.Html }, (result) => {
-            if (result.status === Office.AsyncResultStatus.Failed) {
-                console.error("Error inserting the signature:", result.error.message);
-            }
-            eventObj.completed();
-        });
-
-        // Add a notification to confirm success
-        const notification = {
-            type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-            message: "Mobile Signature added successfully",
-            icon: "none",
-            persistent: false,
-        };
-        Office.context.mailbox.item.notificationMessages.replaceAsync("signatureNotification", notification);
-    } else {
         console.log("Running logic for non-mobile platforms...");
         const signature = await loadSignatureFromFile();
 
@@ -120,7 +82,7 @@ async function checkSignature(eventObj) {
             console.error("No signature loaded.");
             eventObj.completed();
         }
-    }
+    
 }
 
 /**
